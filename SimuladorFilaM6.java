@@ -1,29 +1,27 @@
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.PriorityQueue;
 
-class SimuladorFila {
+class SimuladorFilaM6 {
     private PriorityQueue<Evento> eventosAAcontecer;
     private PriorityQueue<Evento> eventosJaAconteceram;
     private double tempoAtual;
     private double chegadaInicial;
-    public ArrayList<FilaSimulacao> filas;
+    private FilaSimulacao fila1;
+    private FilaSimulacao fila2;
 
-    public SimuladorFila(double chegadaInicial) {
+    public SimuladorFilaM6(double chegadaInicial, FilaSimulacao fila1, FilaSimulacao fila2) {
         this.tempoAtual = 0;
         eventosAAcontecer = new PriorityQueue<>();
         eventosJaAconteceram = new PriorityQueue<>();
         this.chegadaInicial = chegadaInicial;
-        this.filas = new ArrayList<>();
+        this.fila1 = fila1;
+        this.fila2 = fila2;
     }
-
-    
 
 
     public void simular(int eventos) {
-        processarChegada(Evento.criarChegadaInicial(chegadaInicial, filas.get(0)));
+        processarChegada(Evento.criarChegada(chegadaInicial));
 
         for (int i = 1; i < eventos; i++) {
             Evento evento = eventosAAcontecer.poll();
@@ -36,9 +34,17 @@ class SimuladorFila {
             }
         }
         
-        for(FilaSimulacao f: filas){
-            f.mostrarInformacoes(tempoAtual);
-        }
+        System.out.println("==========================================");
+        System.out.println("Simulação Fila 1 (G/G/2/3):");
+        System.out.println("chegada entre 1.0 e 4.0 - atendimento entre 3.0 e 4.0");
+        System.out.println("----------------------------------------------");
+        fila1.mostrarInformacoes(tempoAtual);
+System.out.println();
+        System.out.println("==========================================");
+        System.out.println("Simulação Fila 2 (G/G/1/5):");
+        System.out.println("atendimento entre 2.0 e 3.0");
+        System.out.println("----------------------------------------------");
+        fila2.mostrarInformacoes(tempoAtual);
 
         mostrarPrimeirosEventos();
     }
@@ -46,30 +52,20 @@ class SimuladorFila {
     
     public void processarChegada(Evento chegada) {
         acumulaTempo(chegada);
-        FilaSimulacao fila1 = chegada.destino;
-        if (fila1 == null) {
-            return;
-        }
         if (fila1.Status() < fila1.Capacity()) {
             fila1.In();
             if (fila1.Status() <= fila1.Servers()) {
-                eventosAAcontecer.add(Evento.criarPassagemOuSaida(tempoAtual + fila1.gerarAtendimento(), fila1, fila1.getNextDestino()));
+                eventosAAcontecer.add(Evento.criarPassagem(tempoAtual + fila1.gerarAtendimento()));
             }
         } else {
                 fila1.Loss();
         }
-        eventosAAcontecer.add(Evento.criarChegada(tempoAtual + fila1.gerarChegada(), chegada.origem, chegada.destino));
+        eventosAAcontecer.add(Evento.criarChegada(tempoAtual + fila1.gerarChegada()));
     }
 
     public void acumulaTempo(Evento passagem) {
-        FilaSimulacao fila1 = passagem.origem;
-        FilaSimulacao fila2 = passagem.destino;
-        if (fila1 != null) {
-            fila1.atualizarTempoTamanhoFila(fila1.Status(), passagem.tempo - tempoAtual);
-        }
-        if(fila2 != null){
-            fila2.atualizarTempoTamanhoFila(fila2.Status(), passagem.tempo - tempoAtual);
-        }
+        fila1.atualizarTempoTamanhoFila(fila1.Status(), passagem.tempo - tempoAtual);
+        fila2.atualizarTempoTamanhoFila(fila2.Status(), passagem.tempo - tempoAtual);
         tempoAtual = passagem.tempo;
         eventosJaAconteceram.add(passagem);
     }
@@ -77,16 +73,14 @@ class SimuladorFila {
 
     public void processarPassagem(Evento passagem) {
         acumulaTempo(passagem);
-        FilaSimulacao fila1 = passagem.origem;
-        FilaSimulacao fila2 = passagem.destino;
         fila1.Out();
         if (fila1.Status() >= fila1.Servers()) {
-            eventosAAcontecer.add(Evento.criarPassagemOuSaida(tempoAtual + fila1.gerarAtendimento(), fila1, fila2));
+            eventosAAcontecer.add(Evento.criarPassagem(tempoAtual + fila1.gerarAtendimento()));
         }
         if (fila2.Status() < fila2.Capacity()) {
             fila2.In();
             if (fila2.Status() <= fila2.Servers()) {
-                eventosAAcontecer.add(Evento.criarPassagemOuSaida(tempoAtual + fila2.gerarAtendimento(), fila2, fila2.getNextDestino()));
+                eventosAAcontecer.add(Evento.criarSaida(tempoAtual + fila2.gerarAtendimento()));
             }
         } else {
             fila2.Loss();
@@ -96,10 +90,9 @@ class SimuladorFila {
     
     public void processarSaida(Evento saida) {
         acumulaTempo(saida);
-        FilaSimulacao fila2 = saida.origem;
         fila2.Out();
         if (fila2.Status() >= fila2.Servers()) {
-            eventosAAcontecer.add(Evento.criarSaida(tempoAtual + fila2.gerarAtendimento(), fila2, fila2.getNextDestino()));
+            eventosAAcontecer.add(Evento.criarSaida(tempoAtual + fila2.gerarAtendimento()));
         }
     }
 
@@ -107,17 +100,10 @@ class SimuladorFila {
 
 
     public static void main(String[] args) {
-        Map<Double, FilaSimulacao> probEDestinoFila1 = new HashMap<Double,FilaSimulacao>();
-       
-        FilaSimulacao fila1 = new FilaSimulacao(3, 2, List.of(1.0, 4.0), List.of(3.0, 4.0), probEDestinoFila1);
-        Map<Double, FilaSimulacao> probEDestinoFila2 = new HashMap<Double,FilaSimulacao>();
-        FilaSimulacao fila2 = new FilaSimulacao(5, 1, null, List.of(2.0, 3.0), probEDestinoFila2);
-        probEDestinoFila1.put(1.0, fila2);
-        probEDestinoFila2.put(1.0, null);
-        SimuladorFila simulador = new SimuladorFila(1.5);
+        FilaSimulacao fila1 = new FilaSimulacao(3, 2, List.of(1.0, 4.0), List.of(3.0, 4.0));
+        FilaSimulacao fila2 = new FilaSimulacao(5, 1, null, List.of(2.0, 3.0));
 
-        simulador.filas.add(fila1);
-        simulador.filas.add(fila2);
+        SimuladorFilaM6 simulador = new SimuladorFilaM6(1.5, fila1, fila2);
 
         simulador.simular(100000);
     }
@@ -137,22 +123,6 @@ class FilaSimulacao {
     private HashMap<Integer, Double> tamanhoFilaETempo;
     private List<Double> intervaloAtendimento;
     private List<Double> intervaloChegada;
-    private Map<Double, FilaSimulacao> probEDestinoMap;
-    
-    public FilaSimulacao getNextDestino(){
-        Double choice = RandomMCL.gerarEntre(0,1);
-        Double Sum = 0.0;
-        FilaSimulacao destino = null;
-        for(Map.Entry<Double, FilaSimulacao> probEDestino : probEDestinoMap.entrySet()){
-            double prob = probEDestino.getKey();
-            Sum = Sum + prob;
-            if(choice < Sum){
-                destino = probEDestino.getValue();
-                break;
-            }
-        }
-        return destino;
-    }
 
     public int Status() {
         return customers;
@@ -178,7 +148,7 @@ class FilaSimulacao {
         customers--;
     }
 
-    public FilaSimulacao(int capacidadeFila, int servidores, List<Double> intervaloChegada , List<Double> intervaloAtendimento, Map<Double, FilaSimulacao> probEDestinoMap) {
+    public FilaSimulacao(int capacidadeFila, int servidores, List<Double> intervaloChegada , List<Double>  intervaloAtendimento) {
         this.capacity = capacidadeFila;
         this.servers = servidores;
         this.customers = 0;
@@ -189,7 +159,6 @@ class FilaSimulacao {
         }
         this.intervaloChegada = intervaloChegada;
         this.intervaloAtendimento = intervaloAtendimento;
-        this.probEDestinoMap = probEDestinoMap;
     }
 
     public void mostrarInformacoes(double tempoFinal) {
@@ -227,11 +196,6 @@ class FilaSimulacao {
         double atendimentoMaximo = intervaloAtendimento.get(1);
         return RandomMCL.gerarEntre(atendimentoMinimo, atendimentoMaximo);
     }
-
-    @Override
-    public String toString(){
-        return "["+ "capacity" +  capacity + "intervalo Chegada" + this.intervaloChegada + "]" ;
-    }
 }
 
 class RandomMCL {
@@ -259,37 +223,28 @@ enum Tipo {
 class Evento implements Comparable<Evento> {
     public double tempo;
     public Tipo tipo;
-    public FilaSimulacao origem;
-    public FilaSimulacao destino;
 
     
-    private Evento(double tempo, Tipo tipo, FilaSimulacao origem, FilaSimulacao destino) {
+    private Evento(double tempo, Tipo tipo) {
         this.tempo = tempo;
         this.tipo = tipo;
-        this.origem = origem;
-        this.destino = destino;
     }
 
-    public static Evento criarChegada(double tempo, FilaSimulacao origem, FilaSimulacao destino) {
-        return new Evento(tempo, Tipo.CHEGADA, origem, destino);
+    public static Evento criarChegada(double tempo) {
+        return new Evento(tempo, Tipo.CHEGADA);
     }
 
-    public static Evento criarChegadaInicial(double tempo, FilaSimulacao destino) {
-        return new Evento(tempo, Tipo.CHEGADA, null, destino);
+    public static Evento criarPassagem(double tempo) {
+        return new Evento(tempo, Tipo.PASSAGEM);
     }
 
-    public static Evento criarPassagemOuSaida(double tempo, FilaSimulacao origem, FilaSimulacao destino) {
-        if(destino == null) return Evento.criarSaida(tempo, origem, destino);
-        return new Evento(tempo, Tipo.PASSAGEM, origem, destino);
-    }
-
-    public static Evento criarSaida(double tempo, FilaSimulacao origem, FilaSimulacao destino) {
-        return new Evento(tempo, Tipo.SAIDA, origem, destino);
+    public static Evento criarSaida(double tempo) {
+        return new Evento(tempo, Tipo.SAIDA);
     }
     
     @Override
     public String toString() {
-        return "Evento [tempo=" + tempo + ", tipo=" + tipo + ", origem=" + origem + ", destino=" + destino + "]";
+        return "Evento [tempo=" + tempo + ", tipo=" + tipo + "]";
     }
 
     @Override
