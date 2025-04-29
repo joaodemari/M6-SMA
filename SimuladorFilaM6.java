@@ -3,14 +3,14 @@ import java.util.List;
 import java.util.PriorityQueue;
 
 class SimuladorFilaM6 {
-    private PriorityQueue<Evento> eventosAAcontecer;
-    private PriorityQueue<Evento> eventosJaAconteceram;
+    private PriorityQueue<EventoM6> eventosAAcontecer;
+    private PriorityQueue<EventoM6> eventosJaAconteceram;
     private double tempoAtual;
     private double chegadaInicial;
-    private FilaSimulacao fila1;
-    private FilaSimulacao fila2;
+    private FilaSimulacaoM6 fila1;
+    private FilaSimulacaoM6 fila2;
 
-    public SimuladorFilaM6(double chegadaInicial, FilaSimulacao fila1, FilaSimulacao fila2) {
+    public SimuladorFilaM6(double chegadaInicial, FilaSimulacaoM6 fila1, FilaSimulacaoM6 fila2) {
         this.tempoAtual = 0;
         eventosAAcontecer = new PriorityQueue<>();
         eventosJaAconteceram = new PriorityQueue<>();
@@ -21,10 +21,10 @@ class SimuladorFilaM6 {
 
 
     public void simular(int eventos) {
-        processarChegada(Evento.criarChegada(chegadaInicial));
+        processarChegada(EventoM6.criarChegada(chegadaInicial));
 
         for (int i = 1; i < eventos; i++) {
-            Evento evento = eventosAAcontecer.poll();
+            EventoM6 evento = eventosAAcontecer.poll();
             if (evento.tipo == Tipo.CHEGADA) {
                 processarChegada(evento);
             } else if (evento.tipo == Tipo.SAIDA) {
@@ -50,20 +50,22 @@ System.out.println();
     }
 
     
-    public void processarChegada(Evento chegada) {
+    public void processarChegada(EventoM6 chegada) {
         acumulaTempo(chegada);
         if (fila1.Status() < fila1.Capacity()) {
             fila1.In();
             if (fila1.Status() <= fila1.Servers()) {
-                eventosAAcontecer.add(Evento.criarPassagem(tempoAtual + fila1.gerarAtendimento()));
+                eventosAAcontecer.add(EventoM6.criarPassagem(tempoAtual + fila1.gerarAtendimento()));
             }
         } else {
                 fila1.Loss();
         }
-        eventosAAcontecer.add(Evento.criarChegada(tempoAtual + fila1.gerarChegada()));
+        double tempoChegada = fila1.gerarChegada();
+        EventoM6 eventoM6 = EventoM6.criarChegada(tempoAtual + tempoChegada);
+        eventosAAcontecer.add(eventoM6);
     }
 
-    public void acumulaTempo(Evento passagem) {
+    public void acumulaTempo(EventoM6 passagem) {
         fila1.atualizarTempoTamanhoFila(fila1.Status(), passagem.tempo - tempoAtual);
         fila2.atualizarTempoTamanhoFila(fila2.Status(), passagem.tempo - tempoAtual);
         tempoAtual = passagem.tempo;
@@ -71,16 +73,16 @@ System.out.println();
     }
 
 
-    public void processarPassagem(Evento passagem) {
+    public void processarPassagem(EventoM6 passagem) {
         acumulaTempo(passagem);
         fila1.Out();
         if (fila1.Status() >= fila1.Servers()) {
-            eventosAAcontecer.add(Evento.criarPassagem(tempoAtual + fila1.gerarAtendimento()));
+            eventosAAcontecer.add(EventoM6.criarPassagem(tempoAtual + fila1.gerarAtendimento()));
         }
         if (fila2.Status() < fila2.Capacity()) {
             fila2.In();
             if (fila2.Status() <= fila2.Servers()) {
-                eventosAAcontecer.add(Evento.criarSaida(tempoAtual + fila2.gerarAtendimento()));
+                eventosAAcontecer.add(EventoM6.criarSaida(tempoAtual + fila2.gerarAtendimento()));
             }
         } else {
             fila2.Loss();
@@ -88,11 +90,11 @@ System.out.println();
     }
 
     
-    public void processarSaida(Evento saida) {
+    public void processarSaida(EventoM6 saida) {
         acumulaTempo(saida);
         fila2.Out();
         if (fila2.Status() >= fila2.Servers()) {
-            eventosAAcontecer.add(Evento.criarSaida(tempoAtual + fila2.gerarAtendimento()));
+            eventosAAcontecer.add(EventoM6.criarSaida(tempoAtual + fila2.gerarAtendimento()));
         }
     }
 
@@ -100,8 +102,8 @@ System.out.println();
 
 
     public static void main(String[] args) {
-        FilaSimulacao fila1 = new FilaSimulacao(3, 2, List.of(1.0, 4.0), List.of(3.0, 4.0));
-        FilaSimulacao fila2 = new FilaSimulacao(5, 1, null, List.of(2.0, 3.0));
+        FilaSimulacaoM6 fila1 = new FilaSimulacaoM6(3, 2, List.of(1.0, 4.0), List.of(3.0, 4.0));
+        FilaSimulacaoM6 fila2 = new FilaSimulacaoM6(5, 1, null, List.of(2.0, 3.0));
 
         SimuladorFilaM6 simulador = new SimuladorFilaM6(1.5, fila1, fila2);
 
@@ -115,7 +117,7 @@ System.out.println();
     }
 }
 
-class FilaSimulacao {
+class FilaSimulacaoM6 {
     private int capacity;
     private int customers;
     private int servers;
@@ -148,7 +150,7 @@ class FilaSimulacao {
         customers--;
     }
 
-    public FilaSimulacao(int capacidadeFila, int servidores, List<Double> intervaloChegada , List<Double>  intervaloAtendimento) {
+    public FilaSimulacaoM6(int capacidadeFila, int servidores, List<Double> intervaloChegada , List<Double>  intervaloAtendimento) {
         this.capacity = capacidadeFila;
         this.servers = servidores;
         this.customers = 0;
@@ -163,6 +165,11 @@ class FilaSimulacao {
 
     public void mostrarInformacoes(double tempoFinal) {
         System.out.println("Distribuição de probabilidades de tamanho de fila:");
+        double soma = 0.0;
+        for (int i = 0; i <= capacity; i++) {
+            soma += tamanhoFilaETempo.get(i);
+        }
+        System.out.println("Soma dos tempos: " + soma);
         for (int i = 0; i <= capacity; i++) {
             double tempoNoEstado = tamanhoFilaETempo.get(i);
             System.out.println("Tamanho da fila: " + i + " Tempo da fila no estado: " + tempoNoEstado + " Probabilidade: " + (tempoNoEstado / tempoFinal) * 100 + "%");
@@ -198,15 +205,16 @@ class FilaSimulacao {
     }
 }
 
-class RandomMCL {
-    private static final int A = 13223;
-    private static final int C = 34267;
-    private static final int M = 99923;
-    private static int seed = 13213;
+class RandomMCLM6 {
+    private static final int AM6 = 13223;
+    private static final int CM6 = 34267;
+    private static final int MM6 = 99923;
+    private static int seedM6 = 13213;
 
     private static double gerarAleatorio() {
-        seed = (A * seed + C) % M;
-        return (double) seed / M;
+        seedM6 = (AM6 * seedM6 + CM6) % MM6;
+        double aleatorio = (double) seedM6 / MM6;
+        return aleatorio;  
     }
 
 
@@ -216,39 +224,39 @@ class RandomMCL {
 }
 
 
-enum Tipo {
+enum TipoM6 {
   CHEGADA, SAIDA, PASSAGEM
 }
 
-class Evento implements Comparable<Evento> {
+class EventoM6 implements Comparable<EventoM6> {
     public double tempo;
     public Tipo tipo;
 
     
-    private Evento(double tempo, Tipo tipo) {
+    private EventoM6(double tempo, Tipo tipo) {
         this.tempo = tempo;
         this.tipo = tipo;
     }
 
-    public static Evento criarChegada(double tempo) {
-        return new Evento(tempo, Tipo.CHEGADA);
+    public static EventoM6 criarChegada(double tempo) {
+        return new EventoM6(tempo, Tipo.CHEGADA);
     }
 
-    public static Evento criarPassagem(double tempo) {
-        return new Evento(tempo, Tipo.PASSAGEM);
+    public static EventoM6 criarPassagem(double tempo) {
+        return new EventoM6(tempo, Tipo.PASSAGEM);
     }
 
-    public static Evento criarSaida(double tempo) {
-        return new Evento(tempo, Tipo.SAIDA);
+    public static EventoM6 criarSaida(double tempo) {
+        return new EventoM6(tempo, Tipo.SAIDA);
     }
     
     @Override
     public String toString() {
-        return "Evento [tempo=" + tempo + ", tipo=" + tipo + "]";
+        return "EventoM6 [tempo=" + tempo + ", tipo=" + tipo + "]";
     }
 
     @Override
-    public int compareTo(Evento outro) {
+    public int compareTo(EventoM6 outro) {
         return Double.compare(tempo, outro.tempo);
     }
 }
