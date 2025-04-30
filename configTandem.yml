@@ -1,0 +1,17 @@
+chegadaInicial: 1.5
+eventos: 100000
+filas:
+  - id: "fila1"
+    capacidade: 3
+    servidores: 2
+    chegada: [1.0, 4.0]
+    atendimento: [3.0, 4.0]
+    destinos:
+      1.0: "fila2"
+  - id: "fila2"
+    capacidade: 5
+    servidores: 1
+    chegada: null
+    atendimento: [2.0, 3.0]
+    destinos:
+      1.0: null

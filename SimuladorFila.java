@@ -3,6 +3,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
+import org.yaml.snakeyaml.Yaml;
+import java.io.FileInputStream;
+import java.io.InputStream;
 
 class SimuladorFila {
     private PriorityQueue<Evento> eventosAAcontecer;
@@ -19,61 +22,52 @@ class SimuladorFila {
         this.filas = new ArrayList<>();
     }
 
-    
-
-
     public void simular(int eventos) {
         processarChegada(Evento.criarChegadaInicial(chegadaInicial, filas.get(0)));
 
         for (int i = 1; i < eventos; i++) {
             Evento evento = eventosAAcontecer.poll();
+            if (evento == null) break;
             if (evento.tipo == Tipo.CHEGADA) {
                 processarChegada(evento);
             } else if (evento.tipo == Tipo.SAIDA) {
                 processarSaida(evento);
-            }else if (evento.tipo == Tipo.PASSAGEM) {
+            } else if (evento.tipo == Tipo.PASSAGEM) {
                 processarPassagem(evento);
             }
         }
         
-        for(FilaSimulacao f: filas){
+        for (FilaSimulacao f : filas) {
             f.mostrarInformacoes(tempoAtual);
         }
 
         mostrarPrimeirosEventos();
     }
 
-    
     public void processarChegada(Evento chegada) {
         acumulaTempo(chegada);
         FilaSimulacao fila1 = chegada.destino;
         if (fila1 == null) {
             return;
         }
-        if (fila1.Status() < fila1.Capacity()) {
+        if (fila1.Status() < fila1.Capacity() || fila1.Capacity() < 0) {
             fila1.In();
             if (fila1.Status() <= fila1.Servers()) {
                 eventosAAcontecer.add(Evento.criarPassagemOuSaida(tempoAtual + fila1.gerarAtendimento(), fila1, fila1.getNextDestino()));
             }
         } else {
-                fila1.Loss();
+            fila1.Loss();
         }
         eventosAAcontecer.add(Evento.criarChegada(tempoAtual + fila1.gerarChegada(), chegada.origem, chegada.destino));
     }
 
     public void acumulaTempo(Evento passagem) {
-        FilaSimulacao fila1 = passagem.origem;
-        FilaSimulacao fila2 = passagem.destino;
-        if (fila1 != null) {
-            fila1.atualizarTempoTamanhoFila(fila1.Status(), passagem.tempo - tempoAtual);
-        }
-        if(fila2 != null){
-            fila2.atualizarTempoTamanhoFila(fila2.Status(), passagem.tempo - tempoAtual);
+        for(FilaSimulacao f: filas){
+            f.atualizarTempoTamanhoFila(f.Status(), passagem.tempo - tempoAtual);
         }
         tempoAtual = passagem.tempo;
         eventosJaAconteceram.add(passagem);
     }
-
 
     public void processarPassagem(Evento passagem) {
         acumulaTempo(passagem);
@@ -83,7 +77,7 @@ class SimuladorFila {
         if (fila1.Status() >= fila1.Servers()) {
             eventosAAcontecer.add(Evento.criarPassagemOuSaida(tempoAtual + fila1.gerarAtendimento(), fila1, fila2));
         }
-        if (fila2.Status() < fila2.Capacity()) {
+        if (fila2.Status() < fila2.Capacity() || fila2.Capacity() < 0) {
             fila2.In();
             if (fila2.Status() <= fila2.Servers()) {
                 eventosAAcontecer.add(Evento.criarPassagemOuSaida(tempoAtual + fila2.gerarAtendimento(), fila2, fila2.getNextDestino()));
@@ -93,7 +87,6 @@ class SimuladorFila {
         }
     }
 
-    
     public void processarSaida(Evento saida) {
         acumulaTempo(saida);
         FilaSimulacao fila2 = saida.origem;
@@ -103,26 +96,75 @@ class SimuladorFila {
         }
     }
 
-    
-
-
     public static void main(String[] args) {
-        Map<Double, FilaSimulacao> probEDestinoFila1 = new HashMap<Double,FilaSimulacao>();
-       
-        FilaSimulacao fila1 = new FilaSimulacao(3, 2, List.of(1.0, 4.0), List.of(3.0, 4.0), probEDestinoFila1);
-        Map<Double, FilaSimulacao> probEDestinoFila2 = new HashMap<Double,FilaSimulacao>();
-        FilaSimulacao fila2 = new FilaSimulacao(5, 1, null, List.of(2.0, 3.0), probEDestinoFila2);
-        probEDestinoFila1.put(1.0, fila2);
-        probEDestinoFila2.put(1.0, null);
-        SimuladorFila simulador = new SimuladorFila(1.5);
-
-        simulador.filas.add(fila1);
-        simulador.filas.add(fila2);
-
-        simulador.simular(100000);
+        try {
+            Yaml yaml = new Yaml();
+            
+            try (InputStream inputStream = new FileInputStream("config.yml")) {
+                Map<String, Object> config = yaml.load(inputStream);
+                
+                if (config == null) {
+                    throw new RuntimeException("Arquivo config.yml está vazio ou inválido!");
+                }
+    
+                Double chegadaInicial = (Double) config.get("chegadaInicial");
+                Integer eventos = (Integer) config.get("eventos");
+                List<Map<String, Object>> filasConfig = (List<Map<String, Object>>) config.get("filas");
+    
+                System.out.println("=== Valores lidos do config.yml ===");
+                System.out.println("Chegada Inicial: " + chegadaInicial);
+                System.out.println("Número de Eventos: " + eventos);
+                System.out.println("Filas Configuradas:");
+                for (Map<String, Object> filaConfig : filasConfig) {
+                    System.out.println("  ID: " + filaConfig.get("id"));
+                    System.out.println("  Capacidade: " + filaConfig.get("capacidade"));
+                    System.out.println("  Servidores: " + filaConfig.get("servidores"));
+                    System.out.println("  Chegada: " + filaConfig.get("chegada"));
+                    System.out.println("  Atendimento: " + filaConfig.get("atendimento"));
+                    System.out.println("  Destinos: " + filaConfig.get("destinos"));
+                }
+                System.out.println("==================================");
+    
+                SimuladorFila simulador = new SimuladorFila(chegadaInicial);
+    
+                Map<String, FilaSimulacao> mapaFilas = new HashMap<>();
+    
+                for (Map<String, Object> filaConfig : filasConfig) {
+                    String id = (String) filaConfig.get("id");
+                    Integer capacidade = (Integer) filaConfig.get("capacidade");
+                    Integer servidores = (Integer) filaConfig.get("servidores");
+                    List<Double> chegada = (List<Double>) filaConfig.get("chegada");
+                    List<Double> atendimento = (List<Double>) filaConfig.get("atendimento");
+                    Map<Double, String> destinos = (Map<Double, String>) filaConfig.get("destinos");
+    
+                    Map<Double, FilaSimulacao> probEDestinoMap = new HashMap<>();
+                    FilaSimulacao fila = new FilaSimulacao(capacidade, servidores, chegada, atendimento, probEDestinoMap);
+                    fila.setId(id);
+                    mapaFilas.put(id, fila);
+                }
+    
+                for (Map<String, Object> filaConfig : filasConfig) {
+                    String id = (String) filaConfig.get("id");
+                    Map<Double, String> destinos = (Map<Double, String>) filaConfig.get("destinos");
+                    FilaSimulacao origem = mapaFilas.get(id);
+    
+                    for (Map.Entry<Double, String> entrada : destinos.entrySet()) {
+                        Double probabilidade = entrada.getKey();
+                        String destinoId = entrada.getValue();
+                        FilaSimulacao destino = (destinoId == null) ? null : mapaFilas.get(destinoId);
+                        origem.probEDestinoMap.put(probabilidade, destino);
+                    }
+                    simulador.filas.add(origem);
+                }
+    
+                simulador.simular(eventos);
+            }
+        } catch (Exception e) {
+            System.err.println("Erro ao ler o arquivo config.yml: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
- 
     public void mostrarPrimeirosEventos() {
         System.out.println("\n20 primeiros eventos da simulação:");
         eventosJaAconteceram.stream().limit(20).forEach(System.out::println);
@@ -130,6 +172,7 @@ class SimuladorFila {
 }
 
 class FilaSimulacao {
+    private String id;
     private int capacity;
     private int customers;
     private int servers;
@@ -137,10 +180,10 @@ class FilaSimulacao {
     private HashMap<Integer, Double> tamanhoFilaETempo;
     private List<Double> intervaloAtendimento;
     private List<Double> intervaloChegada;
-    private Map<Double, FilaSimulacao> probEDestinoMap;
+    public Map<Double, FilaSimulacao> probEDestinoMap;
     
     public FilaSimulacao getNextDestino(){
-        Double choice = RandomMCL.gerarEntre(0,1);
+        Double choice = RandomMCLNextDestino.gerarEntre(0,1);
         Double Sum = 0.0;
         FilaSimulacao destino = null;
         for(Map.Entry<Double, FilaSimulacao> probEDestino : probEDestinoMap.entrySet()){
@@ -184,35 +227,40 @@ class FilaSimulacao {
         this.customers = 0;
         this.loss = 0;
         tamanhoFilaETempo = new HashMap<>();
-        for (int i = 0; i <= capacidadeFila; i++) {
-            tamanhoFilaETempo.put(i, 0.0);
-        }
+            for (int i = 0; i <= capacidadeFila; i++) {
+                tamanhoFilaETempo.put(i, 0.0);
+            }
         this.intervaloChegada = intervaloChegada;
         this.intervaloAtendimento = intervaloAtendimento;
         this.probEDestinoMap = probEDestinoMap;
     }
 
+    public void setId(String id) {
+        this.id = id;
+    }
+
     public void mostrarInformacoes(double tempoFinal) {
+        System.out.println("======================================");
+        System.out.println("Fila: " + id);
+        System.out.println("--------------------------------------");
         System.out.println("Distribuição de probabilidades de tamanho de fila:");
-        for (int i = 0; i <= capacity; i++) {
+        for (int i = 0; i < tamanhoFilaETempo.entrySet().size(); i++) {
             double tempoNoEstado = tamanhoFilaETempo.get(i);
             System.out.println("Tamanho da fila: " + i + " Tempo da fila no estado: " + tempoNoEstado + " Probabilidade: " + (tempoNoEstado / tempoFinal) * 100 + "%");
         }
         System.out.println("--------------------------------------");
 
         System.out.println("Clientes perdidos: " + loss);
-        System.out.println("Tempo final: " + tempoFinal);
     }
 
     public void atualizarTempoTamanhoFila(int tamanhoFila, double tempoDecorrido) {
-        double tempoAnterior = tamanhoFilaETempo.get(tamanhoFila);
+        double tempoAnterior = tamanhoFilaETempo.getOrDefault(tamanhoFila, 0.0);
         tamanhoFilaETempo.put(tamanhoFila, tempoAnterior + tempoDecorrido);
     }
 
-
     public double gerarChegada() {
         if (intervaloChegada == null || intervaloChegada.size() != 2) {
-            throw new IllegalArgumentException("Intervalo de chegada inválido.");
+            return 0; // Retorna 0 se não houver intervalo de chegada (como na fila2)
         }
         double chegadaMinima = intervaloChegada.get(0);
         double chegadaMaxima = intervaloChegada.get(1);
@@ -245,15 +293,32 @@ class RandomMCL {
         return (double) seed / M;
     }
 
-
     public static double gerarEntre(double minimo, double maximo) {
         return minimo + gerarAleatorio() * (maximo - minimo);
     }
 }
 
 
+class RandomMCLNextDestino {
+    private static final int A = 13223;
+    private static final int C = 34267;
+    private static final int M = 99923;
+    private static int seed = 13213;
+
+    private static double gerarAleatorio() {
+        seed = (A * seed + C) % M;
+        double aleatorio = (double) seed / M;
+        return aleatorio;
+    }
+
+
+    public static double gerarEntre(double minimo, double maximo) {
+        return minimo + gerarAleatorio() * (maximo - minimo);
+    }
+}
+
 enum Tipo {
-  CHEGADA, SAIDA, PASSAGEM
+    CHEGADA, SAIDA, PASSAGEM
 }
 
 class Evento implements Comparable<Evento> {
@@ -262,7 +327,6 @@ class Evento implements Comparable<Evento> {
     public FilaSimulacao origem;
     public FilaSimulacao destino;
 
-    
     private Evento(double tempo, Tipo tipo, FilaSimulacao origem, FilaSimulacao destino) {
         this.tempo = tempo;
         this.tipo = tipo;
@@ -279,7 +343,7 @@ class Evento implements Comparable<Evento> {
     }
 
     public static Evento criarPassagemOuSaida(double tempo, FilaSimulacao origem, FilaSimulacao destino) {
-        if(destino == null) return Evento.criarSaida(tempo, origem, destino);
+        if (destino == null) return Evento.criarSaida(tempo, origem, destino);
         return new Evento(tempo, Tipo.PASSAGEM, origem, destino);
     }
 
@@ -289,7 +353,7 @@ class Evento implements Comparable<Evento> {
     
     @Override
     public String toString() {
-        return "Evento [tempo=" + tempo + ", tipo=" + tipo + ", origem=" + origem + ", destino=" + destino + "]";
+        return "Evento [tempo=" + tempo + ", tipo=" + tipo +"]";
     }
 
     @Override
@@ -297,4 +361,3 @@ class Evento implements Comparable<Evento> {
         return Double.compare(tempo, outro.tempo);
     }
 }
-
