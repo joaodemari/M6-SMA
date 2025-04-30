@@ -251,6 +251,7 @@ class FilaSimulacao {
         System.out.println("--------------------------------------");
 
         System.out.println("Clientes perdidos: " + loss);
+        System.out.println("Tempo total de simulação: " + tempoFinal);
     }
 
     public void atualizarTempoTamanhoFila(int tamanhoFila, double tempoDecorrido) {
