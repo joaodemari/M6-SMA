@@ -1,0 +1,112 @@
+=== Configuraç?o YAML ===
+Chegadas Iniciais:
+======================================
+Fila: RECLAMACAO_EXPRESS
+--------------------------------------
+Distribuiç?o de probabilidades de tamanho de fila:
+Tamanho da fila: 0 Tempo no estado: 91286,87 Probabilidade: 94,25% 
+Tamanho da fila: 1 Tempo no estado: 5570,43 Probabilidade: 5,75%
+--------------------------------------
+Clientes perdidos: 99
+Tempo total de simulacao: 96857.29662840388
+--------------------------------------
+Análise de desempenho:
+Total de saídas: 2230
+Populacao media (N): 0,06
+Vazao (D): 1,3803 clientes por hora
+Utilizacao (U): 5,75%
+Tempo medio de resposta (W): 0,04 hora
+======================================
+Fila: CAIXA
+--------------------------------------
+Distribuiç?o de probabilidades de tamanho de fila:
+Tamanho da fila: 0 Tempo no estado: 2,00 Probabilidade: 0,00%
+Tamanho da fila: 1 Tempo no estado: 21186,57 Probabilidade: 21,87%
+Tamanho da fila: 2 Tempo no estado: 70642,09 Probabilidade: 72,93%
+Tamanho da fila: 3 Tempo no estado: 5026,63 Probabilidade: 5,19%
+Tamanho da fila: 4 Tempo no estado: 0,00 Probabilidade: 0,00%
+Tamanho da fila: 5 Tempo no estado: 0,00 Probabilidade: 0,00%
+Tamanho da fila: 6 Tempo no estado: 0,00 Probabilidade: 0,00%
+Tamanho da fila: 7 Tempo no estado: 0,00 Probabilidade: 0,00%
+--------------------------------------
+Clientes perdidos: 0
+Tempo total de simulacao: 96857.29662840388
+--------------------------------------
+Análise de desempenho:
+Total de saídas: 32273
+Populacao media (N): 1,83
+Vazao (D): 19,9976 clientes por hora
+Utilizacao (U): 61,10%
+Tempo medio de resposta (W): 0,09 hora
+======================================
+Fila: RECLAMACAO_COMUM
+--------------------------------------
+Distribuiç?o de probabilidades de tamanho de fila:
+Tamanho da fila: 0 Tempo no estado: 93042,50 Probabilidade: 96,06%
+Tamanho da fila: 1 Tempo no estado: 3814,80 Probabilidade: 3,94%
+--------------------------------------
+Clientes perdidos: 24
+Tempo total de simulacao: 96857.29662840388
+--------------------------------------
+Análise de desempenho:
+Total de saídas: 953
+Populacao media (N): 0,04
+Vazao (D): 0,5908 clientes por hora
+Utilizacao (U): 3,94%
+Tempo medio de resposta (W): 0,07 hora
+======================================
+Fila: COZINHA_COMUM
+--------------------------------------
+Distribuiç?o de probabilidades de tamanho de fila:
+Tamanho da fila: 0 Tempo no estado: 3036,91 Probabilidade: 3,14% 
+Tamanho da fila: 1 Tempo no estado: 10551,72 Probabilidade: 10,89%
+Tamanho da fila: 2 Tempo no estado: 17979,11 Probabilidade: 18,56%
+Tamanho da fila: 3 Tempo no estado: 20486,98 Probabilidade: 21,15%
+Tamanho da fila: 4 Tempo no estado: 16404,67 Probabilidade: 16,94%
+Tamanho da fila: 5 Tempo no estado: 11049,17 Probabilidade: 11,41%
+Tamanho da fila: 6 Tempo no estado: 6888,76 Probabilidade: 7,11%
+Tamanho da fila: 7 Tempo no estado: 4352,70 Probabilidade: 4,49%
+Tamanho da fila: 8 Tempo no estado: 2548,49 Probabilidade: 2,63%
+Tamanho da fila: 9 Tempo no estado: 1479,71 Probabilidade: 1,53%
+Tamanho da fila: 10 Tempo no estado: 892,29 Probabilidade: 0,92%
+Tamanho da fila: 11 Tempo no estado: 678,37 Probabilidade: 0,70%
+Tamanho da fila: 12 Tempo no estado: 338,60 Probabilidade: 0,35% 
+Tamanho da fila: 13 Tempo no estado: 129,56 Probabilidade: 0,13%
+Tamanho da fila: 14 Tempo no estado: 40,25 Probabilidade: 0,04%
+Tamanho da fila: 15 Tempo no estado: 0,00 Probabilidade: 0,00%
+--------------------------------------
+Clientes perdidos: 0
+Tempo total de simulacao: 96857.29662840388
+--------------------------------------
+Análise de desempenho:
+Total de saídas: 9686
+Populacao media (N): 3,69
+Vazao (D): 6,0058 clientes por hora
+Utilizacao (U): 83,41%
+Tempo medio de resposta (W): 0,61 hora
+======================================
+Fila: COZINHA_EXPRESS
+--------------------------------------
+Distribuiç?o de probabilidades de tamanho de fila:
+Tamanho da fila: 0 Tempo no estado: 1204,60 Probabilidade: 1,24%
+Tamanho da fila: 1 Tempo no estado: 8217,11 Probabilidade: 8,48%
+Tamanho da fila: 2 Tempo no estado: 22704,23 Probabilidade: 23,44%
+Tamanho da fila: 3 Tempo no estado: 30028,61 Probabilidade: 31,00%
+Tamanho da fila: 4 Tempo no estado: 20610,47 Probabilidade: 21,28%
+Tamanho da fila: 5 Tempo no estado: 8830,92 Probabilidade: 9,12%
+Tamanho da fila: 6 Tempo no estado: 3252,24 Probabilidade: 3,36%
+Tamanho da fila: 7 Tempo no estado: 1274,06 Probabilidade: 1,32%
+Tamanho da fila: 8 Tempo no estado: 541,41 Probabilidade: 0,56%
+Tamanho da fila: 9 Tempo no estado: 176,05 Probabilidade: 0,18%
+Tamanho da fila: 10 Tempo no estado: 17,60 Probabilidade: 0,02%
+Tamanho da fila: 11 Tempo no estado: 0,00 Probabilidade: 0,00%
+--------------------------------------
+Clientes perdidos: 0
+Tempo total de simulacao: 96857.29662840388
+--------------------------------------
+Análise de desempenho:
+Total de saídas: 22583
+Populacao media (N): 3,15
+Vazao (D): 13,9560 clientes por hora
+Utilizacao (U): 85,29%
+Tempo medio de resposta (W): 0,23 hora

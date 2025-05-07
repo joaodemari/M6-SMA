@@ -1,0 +1,98 @@
+=== Configuraç?o YAML ===
+Chegadas Iniciais:
+======================================
+Fila: RECLAMACAO_EXPRESS
+--------------------------------------
+Distribuiç?o de probabilidades de tamanho de fila:
+Tamanho da fila: 0 Tempo no estado: 135224,59 Probabilidade: 96,73% 
+Tamanho da fila: 1 Tempo no estado: 4567,00 Probabilidade: 3,27% 
+--------------------------------------
+Clientes perdidos: 27
+Tempo total de simulacao: 139791.592085907
+--------------------------------------
+Análise de desempenho:
+Total de saídas: 1832
+Populacao media (N): 0,03
+Vazao (D): 0,7841 clientes por hora
+Utilizacao (U): 3,27%
+Tempo medio de resposta (W): 0,04 hora
+======================================
+Fila: CAIXA
+--------------------------------------
+Distribuiç?o de probabilidades de tamanho de fila:
+Tamanho da fila: 0 Tempo no estado: 2,00 Probabilidade: 0,00%
+Tamanho da fila: 1 Tempo no estado: 4,28 Probabilidade: 0,00%
+Tamanho da fila: 2 Tempo no estado: 7,41 Probabilidade: 0,01%
+Tamanho da fila: 3 Tempo no estado: 4,59 Probabilidade: 0,00%
+Tamanho da fila: 4 Tempo no estado: 8,33 Probabilidade: 0,01%
+Tamanho da fila: 5 Tempo no estado: 6,48 Probabilidade: 0,00%
+Tamanho da fila: 6 Tempo no estado: 39619,32 Probabilidade: 28,34%
+Tamanho da fila: 7 Tempo no estado: 100139,18 Probabilidade: 71,63%
+--------------------------------------
+Clientes perdidos: 21196
+Tempo total de simulacao: 139791.592085907
+--------------------------------------
+Análise de desempenho:
+Total de saídas: 25414
+Populacao media (N): 6,72
+Vazao (D): 10,9089 clientes por hora
+Utilizacao (U): 100,00%
+Tempo medio de resposta (W): 0,62 hora
+======================================
+Fila: RECLAMACAO_COMUM
+--------------------------------------
+Distribuiç?o de probabilidades de tamanho de fila:
+Tamanho da fila: 0 Tempo no estado: 136888,15 Probabilidade: 97,92%
+Tamanho da fila: 1 Tempo no estado: 2903,44 Probabilidade: 2,08%
+--------------------------------------
+Clientes perdidos: 7
+Tempo total de simulacao: 139791.592085907
+--------------------------------------
+Análise de desempenho:
+Total de saídas: 724
+Populacao media (N): 0,02
+Vazao (D): 0,3115 clientes por hora
+Utilizacao (U): 2,08%
+Tempo medio de resposta (W): 0,07 hora
+======================================
+Fila: COZINHA_COMUM
+--------------------------------------
+Distribuiç?o de probabilidades de tamanho de fila:
+Tamanho da fila: 0 Tempo no estado: 27783,37 Probabilidade: 19,87%
+Tamanho da fila: 1 Tempo no estado: 52984,02 Probabilidade: 37,90%
+Tamanho da fila: 2 Tempo no estado: 40174,83 Probabilidade: 28,74%
+Tamanho da fila: 3 Tempo no estado: 15427,48 Probabilidade: 11,04%
+Tamanho da fila: 4 Tempo no estado: 3108,00 Probabilidade: 2,22%
+Tamanho da fila: 5 Tempo no estado: 296,03 Probabilidade: 0,21%
+Tamanho da fila: 6 Tempo no estado: 17,87 Probabilidade: 0,01%
+Tamanho da fila: 7 Tempo no estado: 0,00 Probabilidade: 0,00%
+--------------------------------------
+Clientes perdidos: 0
+Tempo total de simulacao: 139791.592085907
+--------------------------------------
+Análise de desempenho:
+Total de saídas: 7592
+Populacao media (N): 1,39
+Vazao (D): 3,2600 clientes por hora
+Utilizacao (U): 45,28%
+Tempo medio de resposta (W): 0,42 hora
+======================================
+Fila: COZINHA_EXPRESS
+--------------------------------------
+Distribuiç?o de probabilidades de tamanho de fila:
+Tamanho da fila: 0 Tempo no estado: 15979,40 Probabilidade: 11,43%
+Tamanho da fila: 1 Tempo no estado: 59901,89 Probabilidade: 42,85%
+Tamanho da fila: 2 Tempo no estado: 55405,99 Probabilidade: 39,63%
+Tamanho da fila: 3 Tempo no estado: 8504,31 Probabilidade: 6,08%
+Tamanho da fila: 4 Tempo no estado: 0,00 Probabilidade: 0,00%
+--------------------------------------
+Clientes perdidos: 0
+Tempo total de simulacao: 139791.592085907
+--------------------------------------
+Análise de desempenho:
+Total de saídas: 17821
+Populacao media (N): 1,40
+Vazao (D): 7,6566 clientes por hora
+Utilizacao (U): 46,79%
+Tempo medio de resposta (W): 0,18 hora
+======================================

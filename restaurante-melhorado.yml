@@ -7,7 +7,7 @@ arrivals:
 
 queues:
   CAIXA:
-    servers: 1
+    servers: 3
     capacity: 7
     minArrival: 2.0
     maxArrival: 4.0

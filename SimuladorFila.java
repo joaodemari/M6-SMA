@@ -47,16 +47,17 @@ class SimuladorFila {
     }
 
     public void processarChegada(Evento chegada) {
-        acumulaTempo(chegada);
         FilaSimulacao fila1 = chegada.destino;
-        if (fila1 == null) {
+        if (fila1 == null) {            
             return;
         }
+        acumulaTempo(chegada);
         if (fila1.Status() < fila1.Capacity() || fila1.Capacity() < 0) {
             fila1.In();
             if (fila1.Status() <= fila1.Servers()) {
+                FilaSimulacao fila2 = fila1.getNextDestino();
                 eventosAAcontecer.add(Evento.criarPassagemOuSaida(tempoAtual + fila1.gerarAtendimento(randomMCL), fila1,
-                        fila1.getNextDestino()));
+                        fila2));
             }
         } else {
             fila1.Loss();
@@ -79,8 +80,9 @@ class SimuladorFila {
         FilaSimulacao fila2 = passagem.destino;
         fila1.Out();
         if (fila1.Status() >= fila1.Servers()) {
+            FilaSimulacao filaDestino = fila1.getNextDestino();
             eventosAAcontecer
-                    .add(Evento.criarPassagemOuSaida(tempoAtual + fila1.gerarAtendimento(randomMCL), fila1, fila2));
+                    .add(Evento.criarPassagemOuSaida(tempoAtual + fila1.gerarAtendimento(randomMCL), fila1, filaDestino));
         }
         if (fila2.Status() < fila2.Capacity() || fila2.Capacity() < 0) {
             fila2.In();
@@ -99,7 +101,7 @@ class SimuladorFila {
         fila2.Out();
         if (fila2.Status() >= fila2.Servers()) {
             eventosAAcontecer
-                    .add(Evento.criarSaida(tempoAtual + fila2.gerarAtendimento(randomMCL), fila2,
+                    .add(Evento.criarPassagemOuSaida(tempoAtual + fila2.gerarAtendimento(randomMCL), fila2,
                             fila2.getNextDestino()));
         }
     }
@@ -199,13 +201,14 @@ class SimuladorFila {
     }
 
     public void mostrarPrimeirosEventos() {
-        System.out.println("\n20 primeiros eventos da simulação:");
-        eventosJaAconteceram.stream().limit(20).forEach(System.out::println);
+        System.out.println("======================================");
+        System.out.println("\n10 primeiros eventos da simulação:");
+        eventosJaAconteceram.stream().limit(10).forEach(System.out::println);
     }
 }
 
 class FilaSimulacao {
-    private String id;
+    public String id;
     private int capacity;
     private int customers;
     private int servers;
@@ -287,7 +290,9 @@ class FilaSimulacao {
         double vazao = 0.0;
         double utilizacao = 0.0;
 
-        for (int i = 0; i <= capacity; i++) {
+        int capacidade = this.capacity < 0 ? tamanhoFilaETempo.size() : this.capacity;
+
+        for (int i = 0; i <= capacidade; i++) {
             double tempoNoEstado = tamanhoFilaETempo.getOrDefault(i, 0.0);
             double probabilidade = tempoNoEstado / tempoFinal;
 
@@ -303,14 +308,14 @@ class FilaSimulacao {
 
         System.out.println("--------------------------------------");
         System.out.println("Clientes perdidos: " + loss);
-        System.out.println("Tempo total de simulação: " + tempoFinal);
+        System.out.println("Tempo total de simulacao: " + tempoFinal);
         System.out.println("--------------------------------------");
         System.out.println("Análise de desempenho:");
         System.out.println("Total de saídas: " + totalSaidas);
-        System.out.printf("População média (N): %.2f\n", populacao);
-        System.out.printf("Vazão (D): %.4f clientes por hora\n", vazao);
-        System.out.printf("Utilização (U): %.2f%%\n", utilizacao * 100);
-        System.out.printf("Tempo médio de resposta (W): %.2f hora\n", tempoResposta);
+        System.out.printf("Populacao media (N): %.2f\n", populacao);
+        System.out.printf("Vazao (D): %.4f clientes por hora\n", vazao);
+        System.out.printf("Utilizacao (U): %.2f%%\n", utilizacao * 100);
+        System.out.printf("Tempo medio de resposta (W): %.2f hora\n", tempoResposta);
     }
 
     public void atualizarTempoTamanhoFila(int tamanhoFila, double tempoDecorrido) {
@@ -338,7 +343,8 @@ class FilaSimulacao {
 
     @Override
     public String toString() {
-        return "[" + "capacity" + capacity + "intervalo Chegada" + this.intervaloChegada + "]";
+        return "[" + "id" + id + ", " + "capacity" + capacity + ", " + "customers" + customers + ", "
+                + "servers" + servers + ", " + "loss" + loss + "]";
     }
 }
 
@@ -415,7 +421,7 @@ class Evento implements Comparable<Evento> {
 
     @Override
     public String toString() {
-        return "Evento [tempo=" + tempo + ", tipo=" + tipo + "]";
+        return "Evento [tempo=" + tempo + ", tipo=" + tipo + "\nOrigem=" + origem + "\nDestino=" + destino + "]\n=============";
     }
 
     @Override
