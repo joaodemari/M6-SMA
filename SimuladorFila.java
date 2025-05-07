@@ -120,10 +120,9 @@ class SimuladorFila {
                     throw new RuntimeException("Arquivo config.yml está vazio ou inválido!");
                 }
 
-                
                 System.out.println("=== Configuração YAML ===");
                 System.out.println("Chegadas Iniciais:");
-                
+
                 List<Integer> seeds = (List<Integer>) config.get("seeds");
                 if (seeds == null || seeds.isEmpty()) {
                     throw new RuntimeException("Nenhuma seed especificada no arquivo config.yml!");
@@ -131,51 +130,51 @@ class SimuladorFila {
                 int seed = seeds.get(0);
                 RandomMCL random = new RandomMCL(seed);
                 SimuladorFila simulador = new SimuladorFila(random);
-                
+
                 Map<String, Map<String, Object>> queues = (Map<String, Map<String, Object>>) config.get("queues");
                 Map<String, FilaSimulacao> mapaFilas = new HashMap<>();
                 for (Map.Entry<String, Map<String, Object>> entry : queues.entrySet()) {
                     String id = entry.getKey();
                     Map<String, Object> filaConfig = entry.getValue();
-                    
+
                     int servidores = (int) filaConfig.get("servers");
                     int capacidade = (int) filaConfig.get("capacity");
-                    
+
                     List<Double> chegada = new ArrayList<>();
                     if (filaConfig.containsKey("minArrival")) {
                         chegada.add(((Number) filaConfig.get("minArrival")).doubleValue());
                         chegada.add(((Number) filaConfig.get("maxArrival")).doubleValue());
                     }
-                    
+
                     List<Double> atendimento = new ArrayList<>();
                     atendimento.add(((Number) filaConfig.get("minService")).doubleValue());
                     atendimento.add(((Number) filaConfig.get("maxService")).doubleValue());
-                    
+
                     Map<Double, FilaSimulacao> probEDestinoMap = new HashMap<>();
                     FilaSimulacao fila = new FilaSimulacao(capacidade, servidores, chegada, atendimento,
-                    probEDestinoMap);
+                            probEDestinoMap);
                     fila.setId(id);
                     mapaFilas.put(id, fila);
                 }
-                
+
                 Map<String, Double> arrivals = (Map<String, Double>) config.get("arrivals");
-                
+
                 Evento chegadaInicial = null;
-                
+
                 if (arrivals == null || arrivals.isEmpty()) {
                     throw new RuntimeException("Nenhuma chegada inicial especificada no arquivo config.yml!");
                 }
-                
+
                 for (Map.Entry<String, Double> entry : arrivals.entrySet()) {
                     String id = entry.getKey();
                     double tempoChegada = entry.getValue();
                     chegadaInicial = Evento.criarChegadaInicial(tempoChegada, mapaFilas.get(id));
                 }
-                
+
                 if (chegadaInicial == null) {
                     throw new RuntimeException("Nenhuma chegada inicial válida encontrada!");
                 }
-                
+
                 List<Map<String, Object>> network = (List<Map<String, Object>>) config.get("network");
                 for (Map<String, Object> conn : network) {
                     String origemId = (String) conn.get("source");
@@ -215,6 +214,7 @@ class FilaSimulacao {
     private List<Double> intervaloAtendimento;
     private List<Double> intervaloChegada;
     public Map<Double, FilaSimulacao> probEDestinoMap;
+    private int totalSaidas = 0;
 
     public FilaSimulacao getNextDestino() {
         Double choice = RandomMCLNext.gerarEntre(0, 1);
@@ -253,6 +253,7 @@ class FilaSimulacao {
 
     public void Out() {
         customers--;
+        totalSaidas++;
     }
 
     public FilaSimulacao(int capacidadeFila, int servidores, List<Double> intervaloChegada,
@@ -279,15 +280,37 @@ class FilaSimulacao {
         System.out.println("Fila: " + id);
         System.out.println("--------------------------------------");
         System.out.println("Distribuição de probabilidades de tamanho de fila:");
-        for (int i = 0; i < tamanhoFilaETempo.entrySet().size(); i++) {
-            double tempoNoEstado = tamanhoFilaETempo.get(i);
-            System.out.printf("Tamanho da fila: %d Tempo da fila no estado: %.2f Probabilidade: %.2f%% \n", i,
-                    tempoNoEstado, (tempoNoEstado / tempoFinal) * 100);
-        }
-        System.out.println("--------------------------------------");
 
+        double minutosPorCliente = ((intervaloAtendimento.get(0) + intervaloAtendimento.get(1)) / 2.0);
+        double taxaAtendimento = 60.0 / minutosPorCliente;
+        double populacao = 0.0;
+        double vazao = 0.0;
+        double utilizacao = 0.0;
+
+        for (int i = 0; i <= capacity; i++) {
+            double tempoNoEstado = tamanhoFilaETempo.getOrDefault(i, 0.0);
+            double probabilidade = tempoNoEstado / tempoFinal;
+
+            System.out.printf("Tamanho da fila: %d Tempo no estado: %.2f Probabilidade: %.2f%% \n",
+                    i, tempoNoEstado, probabilidade * 100);
+
+            populacao += probabilidade * i;
+            vazao += probabilidade * taxaAtendimento * Math.min(i, servers);
+            utilizacao += probabilidade * (double)((double) Math.min(i, servers) / (double) servers);
+        }
+
+        double tempoResposta = (vazao == 0) ? 0 : populacao / vazao;
+
+        System.out.println("--------------------------------------");
         System.out.println("Clientes perdidos: " + loss);
         System.out.println("Tempo total de simulação: " + tempoFinal);
+        System.out.println("--------------------------------------");
+        System.out.println("Análise de desempenho:");
+        System.out.println("Total de saídas: " + totalSaidas);
+        System.out.printf("População média (N): %.2f\n", populacao);
+        System.out.printf("Vazão (D): %.4f clientes por hora\n", vazao);
+        System.out.printf("Utilização (U): %.2f%%\n", utilizacao * 100);
+        System.out.printf("Tempo médio de resposta (W): %.2f hora\n", tempoResposta);
     }
 
     public void atualizarTempoTamanhoFila(int tamanhoFila, double tempoDecorrido) {

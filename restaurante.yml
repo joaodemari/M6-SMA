@@ -1,0 +1,42 @@
+rndnumbersPerSeed: 100000
+seeds: 
+  - 1
+
+arrivals: 
+  CAIXA: 2.0
+
+queues: 
+  CAIXA: 
+    servers: 1
+    capacity: 5
+    minArrival: 2.0
+    maxArrival: 8.0
+    minService: 5.0
+    maxService: 6.0
+  COZINHA: 
+    servers: 5
+    capacity: 15
+    minService: 20.0
+    maxService: 30.0
+  RECLAMACAO: 
+    servers: 1
+    capacity: 1
+    minService: 4.0
+    maxService: 5.0
+
+network: 
+  - source: CAIXA
+    target: null
+    probability: 0.08
+  - source: CAIXA
+    target: COZINHA
+    probability: 0.92
+  - source: COZINHA
+    target: RECLAMACAO
+    probability: 0.1
+  - source: COZINHA
+    target: null
+    probability: 0.9
+  - source: RECLAMACAO
+    target: COZINHA
+    probability: 1.0
